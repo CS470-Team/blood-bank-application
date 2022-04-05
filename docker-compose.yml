@@ -1,0 +1,27 @@
+services:
+  # backend:
+  #   build: ./backend
+  #   restart: always
+  #   ports:
+  #     - "8000:80"
+  #   depends_on:
+  #     # database takes time to start, so we watch a health check
+  #     database:
+  #       condition: service_healthy
+  database:
+    build: ./database
+    restart: always
+    ports:
+      - "3306:3306"
+    volumes:
+      - umkc-data:/var/lib/mysql
+    tty: true
+    healthcheck:
+      # This is insecure, but better practices here are out of scope for this project.
+      test: ["CMD", "mysqladmin", "-uroot", "-proot", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  umkc-data:

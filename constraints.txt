@@ -1,0 +1,35 @@
+- [X] Every Hospital ID must be Unique
+- [X] Hospital name cannot be null
+- [X] Hospital name cannot be more than 80 characters
+- [X] Hospital address cannot be null
+- [X] Hospital employee must contain unique ID
+- [X] Employee Name cannot be null
+- [X] Employee Name cannot be more than 50 characters
+- [X] Employee must contain reference of hospital for which he is playing any role
+- [X] Blood Transfusion must be identified by a unique id
+- [X] Blood Transfusion must contain reference of employee by which the transaction can be made
+- [X] Every client record must be identified by unique key
+- [X] Client name cannot be null
+- [X] Client name cannot be more than 50 characters
+- [X] Every client must have a passwordhash and passwordsalt, that cannot be null
+- [X] Client email and phone number cannot be null
+- [X] Blood donation record must be identified by unique key
+- [X] Blood donation must contain a record of the client who made the donation
+- [X] Blood donation must contain the date of which the donation is performed
+- [X] Blood donation must contain record of amount that is donated by client
+- [X] Blood donation records this donated amount in float.
+- [X] Every Blood bank must be identified by a unique column
+- [X] Blood bank must contain reference of manager of blood bank
+- [X] Blood bank address cannot be null
+- [X] Blood bank address cannot be more than 255 characters
+- [X] Every employee of blood bank must be identified by unique key
+- [X] Blood bank employee must reference the blood bank they work for
+- [X] Blood bank employee name cannot be null
+- [X] Blood bank employee name cannot be more than 50 characters
+- [X] Blood bank employee date of birth cannot be null, to calculate his/her age
+- [X] Blood bank employee must have an SSN that cannot be null
+- [X] Blood bank employee must have a password hash and password salt that cannot be null
+- [X] Blood bank employee address cannot be null
+- [X] Blood bank employee address cannot be more than 255 characters
+- [X] Blood bank employee phone number cannot be null
+- [X] Blood bank employee phone number length cannot be more than 15 digits.
