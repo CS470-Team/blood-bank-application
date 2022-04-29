@@ -5,3 +5,6 @@ mysql -uroot -proot -e "UPDATE mysql.user SET host = '%' WHERE user='root';"
 
 # Run the table creation script
 mysql -uroot -proot bloodbank < docker-entrypoint-initdb.d/create_tables.sql
+
+# Run the data insertion script
+# mysql -uroot -proot bloodbank < docker-entrypoint-initdb.d/populate_tables.sql
