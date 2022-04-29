@@ -1,10 +1,11 @@
-from random import choice, randint
+from random import choice, choices, randint
 import random
 from typing import List
 import bcrypt
 from dataclasses import dataclass, fields
 from re import sub
 from abc import ABC, abstractmethod
+
 
 def value_tuple(value, fields) -> str:
     field_types = [type(getattr(value, field)) for field in fields]
@@ -13,11 +14,12 @@ def value_tuple(value, fields) -> str:
 
 class Entity(ABC):
     @classmethod
-    def generate_sql_insert(cls, count):
+    def generate_sql_insert(cls):
         """this is gross and i'm sure there's a better way"""
-        fake_values = cls.random_list(count)
+        fake_values = cls.random_list(cls.count())
         name, fields = dataclass_fields(cls)
-        sql = f"INSERT INTO {name} ({', '.join(fields)}) VALUES\n"
+        camel_case_fields = [camel_case(field) for field in fields]
+        sql = f"INSERT INTO {name} ({', '.join(camel_case_fields)}) VALUES\n"
         for value in fake_values:
             sql += "\t("
             typed_values = [ty(val) for ty, val in value_tuple(value, fields)]
@@ -28,6 +30,11 @@ class Entity(ABC):
             sql = sql[:-2] + '),\n'
         sql = sql[:-2] + ';'
         return sql
+
+    @staticmethod
+    @abstractmethod
+    def count() -> int:
+        pass
     
     @classmethod
     @abstractmethod
@@ -36,13 +43,16 @@ class Entity(ABC):
 
     @classmethod
     def random_list(cls, n: int) -> List:
-        return [cls.random(i) for i in range(n)]
+        return [cls.random() for i in range(n)]
     
-def camel_case(name):
+def snake_case(name):
   return sub(r'(?<!^)(?=[A-Z])', '_', name).lower()
 
+def camel_case(name):
+    return ''.join(word.title() for word in name.split('_'))
+
 def dataclass_fields(dataclass):
-    name = camel_case(dataclass.__name__)
+    name = snake_case(dataclass.__name__)
     return name, [f.name for f in fields(dataclass)]
 
 def generate_fake_address():
@@ -65,15 +75,20 @@ def generate_fake_password():
     hash = bcrypt.hashpw(str(randint(0, 1000000)).encode(), salt)
     return (salt.decode('utf-8'), hash.decode('utf-8'))
 
+def generate_fake_date(year_range=(1930, 2000)):
+    return f"{randint(year_range[0], year_range[1]):04}-{randint(1, 12):02}-{randint(1, 28):02}"
+
 def generate_fake_birthday():
-    return f"{randint(1, 12)}/{randint(1, 28)}/{randint(1930, 2000)}"
+    return generate_fake_date(year_range=(1930, 2000))
+
+def generate_fake_donation_date():
+    return generate_fake_date(year_range=(2015, 2022))
 
 def generate_fake_ssn():
-    return f"{randint(100, 999):03}-{randint(0, 99):02}-{randint(0000, 9999):04}"
+    return randint(1000000, 9999999)
 
 @dataclass
 class Client(Entity):
-    id: int
     full_name: str
     blood_type: str
     email_address: str
@@ -83,12 +98,15 @@ class Client(Entity):
     password_salt: str
     password_hash: str
 
+    @staticmethod
+    def count() -> int:
+        return 100
+
     @classmethod
-    def random(cls, id: int) -> "Client":
+    def random(cls) -> "Client":
         name = generate_fake_name()
         salt, hash = generate_fake_password()
         return cls(
-            id,
             full_name=name,
             blood_type=choice(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]),
             email_address=f"{name}@gmail.com",
@@ -99,49 +117,113 @@ class Client(Entity):
             password_hash=hash,
         )
 
-class BloodDonation(Entity):
-    pass
-
-class BloodTransfusion(Entity):
-    pass
-
 @dataclass
-class Hospital(Entity):
-    hospital_id: int
-    hospital_name: str
-    street_address: str
+class BloodDonation(Entity):
+    employee_id: int
+    donor_id: int
+    screen_result: str
+    donation_date: str
+    amount: int
+        
+    @staticmethod
+    def count() -> int:
+        return 200
     
     @classmethod
-    def random(cls, id: int) -> "Hospital":
-        cls(
-            id,
-            hospital_name=choice(["Hospital A", "Hospital B", "Hospital C"]),
-            street_address=generate_fake_address()
+    def random(cls) -> "BloodDonation":
+        return cls(
+            employee_id=randint(0, BloodBankEmployee.count() - 1),
+            donor_id=randint(0, Client.count()),
+            screen_result=choice(["positive", "negative"]),
+            donation_date=generate_fake_donation_date(),
+            amount=randint(0, Client.count()),
         )
 
 @dataclass
+class BloodTransfusion(Entity):
+    employee_id: str
+    transfusion_date: str
+    amount: int
+    recipient_id: int
+    
+    @staticmethod
+    def count() -> int:
+        return 200
+    
+    @classmethod
+    def random(cls) -> "BloodTransfusion":
+        return cls(
+            employee_id=randint(0, BloodBankEmployee.count()),
+            transfusion_date=generate_fake_donation_date(),
+            amount=randint(1, 5),
+            recipient_id=randint(0, Client.count()),
+        )
+
+@dataclass
+class Hospital(Entity):
+    hospital_name: str
+    street_address: str
+    
+    @staticmethod
+    def count() -> int:
+        return 3
+    
+    @classmethod
+    def random(cls, name: str) -> "Hospital":
+        return cls(
+            hospital_name=choice(["Hospital A", "Hospital B", "Hospital C"]),
+            street_address=generate_fake_address()
+        )
+        
+    @classmethod
+    def random_list(cls, name: str) -> "Hospital":
+        hospital_names = ["Hospital A", "Hospital B", "Hospital C"]
+        return [cls(
+            hospital_names[i],
+            street_address=generate_fake_address()
+        ) for i in range(Hospital.count())]
+        
+    
+
+@dataclass
 class HospitalEmployee(Entity):
-    employee_id: int
     hospital_id: int
     full_name: str
     
+    @staticmethod
+    def count() -> int:
+        return 50
+    
     @classmethod
-    def random(cls, id: int) -> "HospitalEmployee":
+    def random(cls) -> "HospitalEmployee":
         return cls(
-            employee_id=id,
-            hospital_id=randint(1, 2),
+            hospital_id=randint(0, Hospital.count()),
             full_name=generate_fake_name(),
         )
     
 @dataclass
 class BloodBank(Entity):
-    blood_bank_id: int
     manager_id: int
     street_address: int
+    
+    @staticmethod
+    def count() -> int:
+        return 10
+    
+    @classmethod
+    def random(cls, manager_id: int) -> "BloodBank":
+        return cls(
+            manager_id=randint(0, BloodBankEmployee.count()),
+            street_address=generate_fake_address(),
+        )
+    
+    @classmethod
+    def random_list(cls, n: int) -> List:
+        manager_ids = choices(range(1, BloodBankEmployee.count()), k=n)
+        return [cls.random(manager_ids[i]) for i in range(n)]
 
 @dataclass
 class BloodBankEmployee(Entity):
-    employee_id: int
     blood_bank_id: int
     full_name: str
     date_of_birth: str
@@ -151,13 +233,16 @@ class BloodBankEmployee(Entity):
     street_address: str
     phone_number: str
     
+    @staticmethod
+    def count() -> int:
+        return 100
+    
     @classmethod
-    def random(cls, id) -> "BloodBankEmployee":
+    def random(cls) -> "BloodBankEmployee":
         name = generate_fake_name()
         salt, hash = generate_fake_password()
         return cls(
-            employee_id=id,
-            blood_bank_id=randint(0, 10),
+            blood_bank_id=randint(0, BloodBank.count()),
             full_name=name,
             date_of_birth=generate_fake_birthday(),
             ssn=generate_fake_ssn(),
