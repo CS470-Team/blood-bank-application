@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS client (
     FullName TEXT NOT NULL,
     BloodType TEXT NOT NULL,
     EmailAddress VARCHAR(255) UNIQUE NOT NULL,
-    StreetAddress TEXT NOT NULL,
+    HomeAddress TEXT NOT NULL,
     DateOfBirth TEXT NOT NULL,
     PhoneNumber TEXT NOT NULL,
     PasswordSalt TEXT NOT NULL,
@@ -19,15 +19,16 @@ CREATE TABLE IF NOT EXISTS blood_bank (
 );
 
 CREATE TABLE IF NOT EXISTS blood_bank_employee (
-    EmployeeId INTEGER PRIMARY KEY AUTO_INCREMENT,
-    BloodBankId INTEGER NOT NULL,
+    EmployeeId INTEGER AUTO_INCREMENT,
+    EmployerId INTEGER NOT NULL,
     FullName VARCHAR(255) NOT NULL,
     DateOfBirth DATE NOT NULL,
     Ssn INTEGER NOT NULL,
     PasswordSalt TEXT NOT NULL,
     PasswordHash TEXT NOT NULL,
-    StreetAddress VARCHAR(255) NOT NULL,
-    PhoneNumber VARCHAR(15) NOT NULL
+    HomeAddress VARCHAR(255) NOT NULL,
+    PhoneNumber VARCHAR(15) NOT NULL,
+    PRIMARY KEY (EmployeeId)
 );
 
 CREATE TABLE IF NOT EXISTS hospital (
@@ -38,7 +39,7 @@ CREATE TABLE IF NOT EXISTS hospital (
 
 CREATE TABLE IF NOT EXISTS hospital_employee (
     EmployeeId INTEGER PRIMARY KEY AUTO_INCREMENT,
-    HospitalId INTEGER NOT NULL,
+    EmployerId INTEGER NOT NULL,
     FullName VARCHAR(50) NOT NULL
 );
 

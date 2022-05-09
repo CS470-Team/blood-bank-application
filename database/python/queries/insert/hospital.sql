@@ -1,4 +1,4 @@
 INSERT INTO hospital (HospitalName, StreetAddress) VALUES
-	('Hospital A', '639 W Hemlock'),
-	('Hospital B', '530 S Matisse'),
-	('Hospital C', '663 S Brookside');
+	('Hospital A', '601 W Mystic Ridge'),
+	('Hospital B', '964 N Paris'),
+	('Hospital C', '686 W Sweet Oaks');
